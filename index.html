@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#030705" />
+  <meta name="description" content="Contagem regressiva para Terra Ameaçada 3 — 31 de dezembro de 2026, às 14h (Brasília)." />
+  <title>Terra Ameaçada 3 — Contagem Regressiva</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet" />
+  <style>
+    :root{color-scheme:dark;--green:#18ed9b;--white:#e6fff3}
+    *{box-sizing:border-box}html,body{height:100%;margin:0}
+    body{background:#030705;color:var(--white);overflow:hidden;font-family:Georgia,serif}
+    #landscape{position:fixed;inset:0;display:block;width:100%;height:100%;opacity:.42;pointer-events:none}
+    .shade{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 53% 52% at 50% 47%,transparent 0%,rgba(0,6,5,.23) 60%,rgba(0,0,0,.79) 100%),linear-gradient(180deg,rgba(0,0,0,.52),transparent 36%,rgba(0,0,0,.35) 100%)}
+    .ambient{position:fixed;width:70vmax;height:42vmax;left:50%;top:54%;transform:translate(-50%,-50%);pointer-events:none;background:radial-gradient(ellipse,rgba(0,164,92,.13),transparent 66%);filter:blur(35px);animation:breath 7s ease-in-out infinite alternate}
+    @keyframes breath{from{opacity:.4;transform:translate(-50%,-50%) scale(.9)}to{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+    main{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100svh;gap:clamp(16px,3.5vh,32px);padding:5vh 5vw 9vh;text-align:center}
+    .logo{display:block;width:min(390px,76vw);height:auto;aspect-ratio:16/9;object-fit:contain;filter:drop-shadow(0 0 11px rgba(11,226,124,.24));animation:logoPulse 6s ease-in-out infinite alternate}
+    @keyframes logoPulse{to{filter:drop-shadow(0 0 24px rgba(13,255,146,.52))}}
+    .counter{display:flex;align-items:center;justify-content:center;gap:clamp(3px,1.5vw,19px);white-space:nowrap;max-width:100%;font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:500;font-variant-numeric:lining-nums tabular-nums;font-size:clamp(24px,5.5vw,80px);line-height:1;letter-spacing:-.045em;text-shadow:0 0 9px rgba(28,255,159,.48),0 0 38px rgba(1,203,103,.3)}
+    .num{color:#defff0;min-width:1.6ch;display:inline-block;text-align:center}
+    .num:first-child{color:#46f6ae}
+    .sep{color:#56f9b2;opacity:.7;font-size:.72em;transform:translateY(-.1em);text-shadow:0 0 20px rgba(54,255,170,.85)}
+    .ms{font-size:.79em;min-width:2.35ch;opacity:.82}
+    .hairline{height:1px;width:min(440px,54vw);background:linear-gradient(90deg,transparent,rgba(25,239,146,.4),transparent);box-shadow:0 0 16px rgba(8,238,139,.5);margin-top:3px}
+    @media(max-width:540px){main{gap:17px;padding-bottom:6vh}.logo{width:min(330px,85vw)}.counter{font-size:clamp(21px,6vw,39px);gap:clamp(2px,.9vw,7px)}.hairline{width:72vw}}
+    @media(prefers-reduced-motion:reduce){.ambient,.logo{animation:none}}
+  </style>
+</head>
+<body>
+  <canvas id="landscape" aria-hidden="true"></canvas>
+  <div class="ambient" aria-hidden="true"></div><div class="shade" aria-hidden="true"></div>
+  <main>
+    <img class="logo" src="./logo-transparente.png" alt="Terra Ameaçada 3" />
+    <div class="counter" aria-label="Tempo restante para o lançamento de Terra Ameaçada 3">
+      <span class="num" id="days">00</span><span class="sep">:</span>
+      <span class="num" id="hours">00</span><span class="sep">:</span>
+      <span class="num" id="minutes">00</span><span class="sep">:</span>
+      <span class="num" id="seconds">00</span><span class="sep">:</span>
+      <span class="num ms" id="milliseconds">000</span>
+    </div>
+    <div class="hairline" aria-hidden="true"></div>
+  </main>
+  <script>
+    (()=>{
+      const until = new Date('2026-12-31T14:00:00-03:00').getTime();
+      const els=['days','hours','minutes','seconds','milliseconds'].map(id=>document.getElementById(id));
+      const pad=(v,n=2)=>String(v).padStart(n,'0');
+      let last='';
+      function tick(){
+        const ms=Math.max(0,until-Date.now());
+        const d=Math.floor(ms/86400000),h=Math.floor(ms/3600000)%24,m=Math.floor(ms/60000)%60,s=Math.floor(ms/1000)%60,mm=ms%1000;
+        const vals=[String(d).padStart(2,'0'),pad(h),pad(m),pad(s),pad(mm,3)];
+        const key=vals.join('|');if(key!==last){els.forEach((e,i)=>{if(e.textContent!==vals[i])e.textContent=vals[i]});last=key}
+        requestAnimationFrame(tick);
+      }tick();
+      const canvas=document.getElementById('landscape');const ctx=canvas.getContext('2d');
+      if(!ctx)return;
+      let w=0,h=0,stars=[],pillars=[],dpr=1;
+      let seed=120319;const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+      function resize(){dpr=Math.min(window.devicePixelRatio||1,2);w=window.innerWidth;h=window.innerHeight;canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+        seed=120319;stars=Array.from({length:Math.min(105,Math.floor(w*h/8900))},()=>({x:random()*w,y:random()*h,z:random(),speed:.1+random()*.4,phase:random()*6.28}));
+        pillars=Array.from({length:12},(_,i)=>({x:(i+.35+random()*.32)*w/12,height:20+random()*h*.18,width:3+random()*9,depth:random()}));
+      }
+      window.addEventListener('resize',resize,{passive:true});resize();
+      function draw(time){const t=time*.001;ctx.clearRect(0,0,w,h);
+        const sky=ctx.createLinearGradient(0,0,0,h);sky.addColorStop(0,'#010605');sky.addColorStop(.62,'#061c17');sky.addColorStop(1,'#02100d');ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+        // Distant, softly animated island silhouettes, inspired by the atmosphere of the End.
+        for(let layer=0;layer<3;layer++){
+          const base=h*(.79+layer*.085),amp=10+layer*7;
+          ctx.beginPath();ctx.moveTo(0,h);ctx.lineTo(0,base);
+          for(let x=0;x<=w+8;x+=8){let v=Math.sin(x*.009+layer*4+t*.035)*amp+Math.sin(x*.025+layer+t*.022)*amp*.48;ctx.lineTo(x,base+v)}
+          ctx.lineTo(w,h);ctx.closePath();ctx.fillStyle=['rgba(0,71,53,.18)','rgba(0,84,61,.24)','rgba(0,38,31,.48)'][layer];ctx.fill();
+        }
+        for(const p of pillars){let y=h*.79-p.height,shift=Math.sin(t*.16+p.x)*2;ctx.fillStyle=`rgba(6,96,71,${.12+p.depth*.15})`;ctx.fillRect(p.x+shift,y,p.width,p.height+h*.12);ctx.fillStyle='rgba(15,151,95,.11)';ctx.fillRect(p.x+shift-3,y, p.width+6,2)}
+        for(const st of stars){let yy=(st.y+t*st.speed*2)%h;let a=(.08+st.z*.34)*(.7+.3*Math.sin(t*1.6+st.phase));ctx.fillStyle=`rgba(93,255,177,${a})`;ctx.beginPath();ctx.arc(st.x,yy,.4+st.z*.9,0,Math.PI*2);ctx.fill()}
+        const fog=ctx.createRadialGradient(w*.5,h*.72,10,w*.5,h*.72,Math.max(w*.7,h*.5));fog.addColorStop(0,'rgba(0,163,92,.07)');fog.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=fog;ctx.fillRect(0,0,w,h);
+        if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)requestAnimationFrame(draw);
+      }requestAnimationFrame(draw);
+    })();
+  </script>
+</body>
+</html>
